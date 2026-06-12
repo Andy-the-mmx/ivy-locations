@@ -154,15 +154,23 @@ export function registerTools(server: McpServer, store: IDraftStore, wp: WordPre
       patch: LocationContentSchema.partial().describe('Fields to update'),
     },
     async ({ id, patch }) => {
-      const updated = await store.update(id, patch as Partial<LocationContent>);
-      if (!updated) {
+      const existing = await store.get(id);
+      if (!existing) {
         return { content: [{ type: 'text' as const, text: `No draft found with ID: ${id}` }] };
       }
+      const { _id: _oldId, _createdAt: _ts, ...content } = existing;
+      const merged = { ...(content as LocationContent), ...(patch as Partial<LocationContent>) };
+      const newId = await store.save(merged);
       return {
         content: [
           {
             type: 'text' as const,
-            text: `Draft \`${id}\` updated. Changed fields: ${Object.keys(patch).join(', ')}`,
+            text: [
+              `Draft updated. Changed fields: ${Object.keys(patch).join(', ')}`,
+              ``,
+              `New draft ID: \`${newId}\``,
+              `Use this ID for push_to_wordpress — the old ID is now stale.`,
+            ].join('\n'),
           },
         ],
       };
@@ -176,7 +184,14 @@ export function registerTools(server: McpServer, store: IDraftStore, wp: WordPre
     async () => {
       const drafts = await store.list();
       if (!drafts.length) {
-        return { content: [{ type: 'text' as const, text: 'No pending drafts.' }] };
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: 'No draft index available — drafts are stateless and stored in the conversation context. Use the draft ID from the most recent store_location_draft call.',
+            },
+          ],
+        };
       }
       const rows = drafts.map((d) => `- \`${d.id}\` — **${d.title}** (${d.suburb}) — ${d.createdAt}`);
       return {

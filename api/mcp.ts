@@ -3,7 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'http';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { WordPressClient } from '../src/wordpress.js';
-import { KvDraftStore } from '../src/kv-draft-store.js';
+import { InlineDraftStore } from '../src/inline-draft-store.js';
 import { registerTools } from '../src/register-tools.js';
 
 function unauthorized(res: ServerResponse) {
@@ -36,7 +36,7 @@ export default async function handler(req: IncomingMessage & { body?: unknown },
     locationsEndpoint: process.env.WP_LOCATIONS_ENDPOINT,
   });
 
-  const store = new KvDraftStore();
+  const store = new InlineDraftStore();
   const server = new McpServer({ name: 'ivy-locations', version: '1.0.0' });
 
   registerTools(server, store, wp);
