@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ivy-locations": {
+      "command": "node",
+      "args": ["dist/index.js"]
+    }
+  }
+}
