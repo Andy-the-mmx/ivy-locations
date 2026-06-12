@@ -111,3 +111,11 @@ export interface WordPressPostResult {
   link: string;
   slug: string;
 }
+
+export interface IDraftStore {
+  save(content: LocationContent): Promise<string>;
+  get(id: string): Promise<StoredDraft | undefined>;
+  update(id: string, patch: Partial<LocationContent>): Promise<StoredDraft | undefined>;
+  delete(id: string): Promise<boolean>;
+  list(): Promise<Array<{ id: string; title: string; suburb: string; createdAt: string }>>;
+}

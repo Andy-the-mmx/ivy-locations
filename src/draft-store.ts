@@ -1,24 +1,20 @@
 import { randomBytes } from 'crypto';
-import type { LocationContent, StoredDraft } from './types.js';
+import type { IDraftStore, LocationContent, StoredDraft } from './types.js';
 
-export class DraftStore {
+export class DraftStore implements IDraftStore {
   private drafts = new Map<string, StoredDraft>();
 
-  save(content: LocationContent): string {
+  async save(content: LocationContent): Promise<string> {
     const id = randomBytes(4).toString('hex');
-    this.drafts.set(id, {
-      ...content,
-      _id: id,
-      _createdAt: new Date().toISOString(),
-    });
+    this.drafts.set(id, { ...content, _id: id, _createdAt: new Date().toISOString() });
     return id;
   }
 
-  get(id: string): StoredDraft | undefined {
+  async get(id: string): Promise<StoredDraft | undefined> {
     return this.drafts.get(id);
   }
 
-  update(id: string, patch: Partial<LocationContent>): StoredDraft | undefined {
+  async update(id: string, patch: Partial<LocationContent>): Promise<StoredDraft | undefined> {
     const existing = this.drafts.get(id);
     if (!existing) return undefined;
     const updated: StoredDraft = { ...existing, ...patch };
@@ -26,11 +22,11 @@ export class DraftStore {
     return updated;
   }
 
-  delete(id: string): boolean {
+  async delete(id: string): Promise<boolean> {
     return this.drafts.delete(id);
   }
 
-  list(): Array<{ id: string; title: string; suburb: string; createdAt: string }> {
+  async list(): Promise<Array<{ id: string; title: string; suburb: string; createdAt: string }>> {
     return Array.from(this.drafts.values()).map((d) => ({
       id: d._id,
       title: d.title,
